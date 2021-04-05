@@ -9,7 +9,7 @@ namespace SixMillionDollarKerman
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class SMDK : PartModule
     {
-        // KSPEvent to toggle Million Dollar mode
+        // Button to toggle SMD mode
 
         [KSPEvent(active = true, externalToEVAOnly = true, guiActive = true, guiActiveEditor = false, 
             isPersistent = false, guiName = "Activate Six Million Dollar Mode")]
@@ -58,6 +58,8 @@ namespace SixMillionDollarKerman
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
+                // register game settings and reference stock values
+
                 sb = GameSettings.EVA_Jump;
                 fb = GameSettings.EVA_forward;
                 bb = GameSettings.EVA_back;
@@ -73,7 +75,9 @@ namespace SixMillionDollarKerman
                 recoverVal = 3.0;
                 alt = 0;
 
-                poorStore.Add("runVal", runVal);                        // keep stock values safe for when million dollar mode off
+                // store stock values for when we turn off SMD mode
+
+                poorStore.Add("runVal", runVal);                       
                 poorStore.Add("walkVal", walkVal);
                 poorStore.Add("jumpVal", jumpVal);
                 poorStore.Add("clamberReachVal", clamberReachVal);
@@ -81,7 +85,9 @@ namespace SixMillionDollarKerman
                 poorStore.Add("swimVal", swimVal);
                 poorStore.Add("stumbleT", stumbleT);
 
-                richStore.Add("runVal", 20.0f);                         // keep million dollar values for easy reference
+                // store our SMD mode values
+
+                richStore.Add("runVal", 20.0f);                         
                 richStore.Add("walkVal", 5.0f);
                 richStore.Add("jumpVal", 1.25f);
                 richStore.Add("clamberReachVal", 5.0f);
@@ -101,20 +107,22 @@ namespace SixMillionDollarKerman
             
             if (isRich)
             {
+
+                // only permit super jump if direction not being pressed to prevent nasty physics behaviours, like killing the Kerbal!
                 
-                if (!fb.GetKey(false) && !bb.GetKey(false) && !lb.GetKey(false) && !riB.GetKey(false))    // no direction key being held
+                if (!fb.GetKey(false) && !bb.GetKey(false) && !lb.GetKey(false) && !riB.GetKey(false))    
                 {
-                    if (sb.GetKeyDown(false))                                                     // tap space
+                    if (sb.GetKeyDown(false))                                                     
                     {
                         isJumping = true;
-                        FlightGlobals.ActiveVessel.GetComponent<KerbalEVA>().maxJumpForce = 5.0f;       //dynamically set jump power
+                        FlightGlobals.ActiveVessel.GetComponent<KerbalEVA>().maxJumpForce = 5.0f;       
                     }
 
                 }
                 else
                 {
                     isJumping = false;
-                    FlightGlobals.ActiveVessel.GetComponent<KerbalEVA>().maxJumpForce = poorStore["jumpVal"];   //set back
+                    FlightGlobals.ActiveVessel.GetComponent<KerbalEVA>().maxJumpForce = poorStore["jumpVal"];  
                 } 
             }
         }
@@ -125,6 +133,8 @@ namespace SixMillionDollarKerman
         {
             if (isJumping && isRich)
             {
+                // controls super landing. Assigning RB other than here caused errors although not good practice normally
+
                 Vessel ves = FlightGlobals.ActiveVessel;                    
                 alt = ves.heightFromTerrain;                                
                 rb = ves.GetComponent<Rigidbody>();                         
@@ -145,7 +155,9 @@ namespace SixMillionDollarKerman
 
         public void SetMode()
         {
-            if (isRich && FlightGlobals.ActiveVessel.isEVA)          // set million dollar
+            // set SMD mode
+
+            if (isRich && FlightGlobals.ActiveVessel.isEVA)         
             {
                 KerbalEVA kE = FlightGlobals.ActiveVessel.GetComponent<KerbalEVA>();
                 kE.runSpeed = richStore["runVal"];
@@ -161,7 +173,9 @@ namespace SixMillionDollarKerman
 
             else if (!isRich && FlightGlobals.ActiveVessel.isEVA)
             {
-                KerbalEVA kE = FlightGlobals.ActiveVessel.GetComponent<KerbalEVA>();        // set default
+                // set std mode
+
+                KerbalEVA kE = FlightGlobals.ActiveVessel.GetComponent<KerbalEVA>();        
                 kE.runSpeed = poorStore["runVal"];
                 kE.walkSpeed = poorStore["walkVal"];
                 kE.maxJumpForce = poorStore["jumpVal"];
